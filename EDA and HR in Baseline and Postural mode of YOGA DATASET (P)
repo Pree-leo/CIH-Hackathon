@@ -1,185 +1,182 @@
-\documentclass[conference]{IEEEtran}
-\IEEEoverridecommandlockouts
-\usepackage{cite}
-\usepackage{amsmath,amssymb,amsfonts}
-\usepackage{graphicx}
-\usepackage{textcomp}
-\usepackage{xcolor}
-\usepackage{booktabs}
+import pandas as pd
+import matplotlib.pyplot as plt
+import numpy as np
 
-\def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
-    T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
+# Load dataset
+df = pd.read_csv('/content/_all_data_ (1).csv')
 
-\begin{document}
+# Check first 5 rows
+print(df.head())
 
-\title{Frequency-Domain Signal Processing Analysis of Electrodermal Activity and Heart Rate Variability During Baseline and Postural Yoga States}
+# Check all column names
+print(df.columns)
 
-\author{
-\IEEEauthorblockN{1\textsuperscript{st} Nireeksha Shetty}
-\IEEEauthorblockA{\textit{Dept. of Computer and Communication Engineering} \\
-\textit{NMAM Institute of Technology}\\
-Karkala, India \\
-nnm24cc034@nmamit.in}
-\and
-\IEEEauthorblockN{2\textsuperscript{nd} Preethika}
-\IEEEauthorblockA{\textit{Dept. of Computer and Communication Engineering} \\
-\textit{NMAM Institute of Technology}\\
-Karkala, India \\
-nnm24cc043@nmamit.in}
-}
+# Check how many rows
+print(df.shape)
 
-\maketitle
+# Check unique states
+print(df['state'].unique())
 
-\begin{abstract}
-This study applies frequency-domain signal processing techniques to electrodermal activity (EDA) and heart rate variability, represented through RR interval data, collected during baseline (rest) and postural (yoga) states from 16 subjects ($n = 14{,}716$ samples). The Fast Fourier Transform (FFT) was applied to both signals after removal of the DC component to isolate meaningful frequency content. An independent two-sample $t$-test (Welch's $t$-test) was conducted on FFT magnitude values within the 0--0.1~Hz range to statistically evaluate differences between the two states. Results indicate that both EDA ($t=-2.5127$, $p = 0.0122$) and RR interval ($t=-5.5743$, $p < 0.000001$) signals show statistically significant increases in frequency-domain amplitude during the postural state relative to baseline, suggesting heightened sympathetic nervous system activity during yoga postures. These findings demonstrate that signal processing alone, without machine learning classification, is sufficient to differentiate physiological states.
-\end{abstract}
+# Check unique subjects
+print(df['subject'].unique())
 
-\begin{IEEEkeywords}
-electrodermal activity, heart rate variability, Fast Fourier Transform, signal processing, t-test, yoga, sympathetic nervous system
-\end{IEEEkeywords}
+# Check how many rows per state
+print(df['state'].value_counts())
 
-\section{Introduction}
+print(df['eda_microsiemens'].head(10))
+print(df['rr_interval_milliseconds'].head(10))
 
-Wearable physiological sensors enable continuous, non-invasive monitoring of the autonomic nervous system (ANS) through signals such as electrodermal activity (EDA) and heart rate, derived here through RR interval (the time between successive heartbeats). Changes in ANS balance between sympathetic (``fight-or-flight'') and parasympathetic (``rest-and-digest'') activity are reflected in measurable changes to these signals. Physical activities such as yoga postures are known to influence ANS activity differently from a resting baseline state.
+# Plot EDA signal
+plt.figure(figsize=(12,4))
+plt.plot(df['eda_microsiemens'])
+plt.title('EDA Signal')
+plt.xlabel('Sample')
+plt.ylabel('EDA (microsiemens)')
+plt.show()
 
-Prior work using wearable datasets has typically relied on machine learning (ML) classifiers trained on extracted features to differentiate physiological states. While effective for classification tasks, this approach does not directly establish whether the underlying signals are statistically distinguishable on their own. This study instead investigates whether frequency-domain signal processing techniques --- independent of any ML model --- can reveal and statistically confirm physiological differences between a resting baseline state and an active postural (yoga) state.
+# Plot RR Interval signal
+plt.figure(figsize=(12,4))
+plt.plot(df['rr_interval_milliseconds'])
+plt.title('RR Interval Signal')
+plt.xlabel('Sample')
+plt.ylabel('RR Interval (ms)')
+plt.show()
 
-Specifically, we apply the FFT to EDA and RR interval signals collected during baseline and postural states, remove the DC (zero-frequency) component to isolate meaningful signal variation, and apply an independent $t$-test to the resulting frequency-domain amplitudes to assess statistical significance.
+from scipy.fft import fft, fftfreq
 
-\section{Related Work}
+# Extract EDA signal
+eda_signal = df['eda_microsiemens'].dropna().values
 
-Schmidt \textit{et al.} introduced a wearable device dataset collected via the Empatica E4 sensor capturing EDA, blood volume pulse (BVP), heart rate, skin temperature, and accelerometry during induced stress and structured exercise sessions, intended to support classification of activity states for applications such as closed-loop insulin delivery systems \cite{schmidt2025}. This dataset establishes EDA and heart-rate-derived signals as primary modalities for distinguishing sympathetic activation states.
+# Apply FFT
+fft_values = fft(eda_signal)
+frequencies = fftfreq(len(eda_signal))
 
-Separately, pilot studies on commercial activity monitors (e.g., Fitbit) have shown that wearable feedback can sustain physical activity behavior over time, supporting the practical viability of wearable-based monitoring, though evidence on long-term efficacy remains mixed \cite{jhse}.
+# Plot FFT
+plt.figure(figsize=(12,4))
+plt.plot(frequencies[:len(frequencies)//2],
+         np.abs(fft_values[:len(fft_values)//2]))
+plt.title('FFT of EDA Signal')
+plt.xlabel('Frequency')
+plt.ylabel('Amplitude')
+plt.show()
 
-Work examining skin temperature as an indicator of cognitive flow state demonstrated that single-signal analysis is often insufficient to reliably characterize physiological state, motivating multimodal approaches that combine signals such as EDA, BVP, temperature, and accelerometry \cite{flowtemp}.
+rr_signal = df['rr_interval_milliseconds'].dropna().values
 
-Prior wearable-based yoga research has applied machine learning to distinguish baseline, sympathetic, and parasympathetic states using ACC, BVP, EDA, and temperature signals \cite{anumula2023}. That work, however, relied on a trained classifier rather than direct statistical comparison of frequency-domain signal properties, which is the gap this study addresses.
+fft_rr = fft(rr_signal)
+freq_rr = fftfreq(len(rr_signal))
 
-\section{Methods}
+plt.figure(figsize=(12,4))
+plt.plot(freq_rr[:len(freq_rr)//2],
+         np.abs(fft_rr[:len(fft_rr)//2]))
+plt.title('FFT of RR Interval Signal')
+plt.xlabel('Frequency')
+plt.ylabel('Amplitude')
+plt.show()
 
-\subsection{Participants and Data Acquisition}
-Data were collected from 16 participants (subjects 1--16) using a wrist-worn wearable sensor recording multiple physiological signals during Iyengar yoga practice. The dataset comprised $14{,}716$ samples, including RR interval (ms), EDA ($\mu$S), BVP, accelerometry, gyroscopy, and temperature. Two experimental conditions were recorded: resting baseline ($n = 2{,}235$ samples) and postural yoga activity ($n = 12{,}481$ samples).
+print(df['state'].unique())
 
-\subsection{Signal Preprocessing --- DC Removal}
-Prior to spectral analysis, DC removal was performed independently on each state's signal segment by subtracting the segment mean:
-\begin{equation}
-  x_0(n) = x(n) - \mu_x
-  \label{eq:dc}
-\end{equation}
-where $x(n)$ is the original signal and $\mu_x$ is its mean. This eliminates the zero-frequency component that would otherwise dominate the FFT spectrum and obscure physiologically relevant frequency-band differences.
+# Separate by state
+baseline = df[df['state'] == 'baseline']
+postural = df[df['state'] == 'postural']
 
-\subsection{Fast Fourier Transform}
-The one-sided FFT magnitude spectrum was computed for each condition using SciPy's FFT implementation:
-\begin{equation}
-  |X(k)| = \left| \text{FFT}\{x_0(n)\} \right|, \quad k = 0, 1, \ldots, \frac{N}{2}
-  \label{eq:fft}
-\end{equation}
-Only frequencies in the 0--0.1~Hz range were retained for subsequent statistical comparison, excluding high-frequency components dominated by measurement noise.
+# FFT for each state - EDA
+for state, label in [(baseline,'baseline'), (postural,'postural')]:
+    signal = state['eda_microsiemens'].dropna().values
+    fft_vals = fft(signal)
+    freqs = fftfreq(len(signal))
+    plt.plot(freqs[:len(freqs)//2],
+             np.abs(fft_vals[:len(fft_vals)//2]),
+             label=label)
 
-\subsection{Statistical Analysis}
-Welch's independent-samples $t$-test (\texttt{scipy.stats.ttest\_ind}, \texttt{equal\_var=False}) was used to compare FFT magnitude distributions between baseline and postural conditions for both EDA and RR interval signals, with a significance threshold of $\alpha = 0.05$.
+plt.title('EDA FFT by State')
+plt.xlabel('Frequency')
+plt.ylabel('Amplitude')
+plt.legend()
+plt.show()
 
-\section{Results}
+for state, label in [(baseline,'baseline'),
+                     (postural,'postural')]:
+    signal = state['rr_interval_milliseconds'].dropna().values
+    signal= signal - np.mean(signal)
+    fft_vals = fft(signal)
+    freqs = fftfreq(len(signal))
+    plt.plot(freqs[:len(freqs)//2],
+             np.abs(fft_vals[:len(fft_vals)//2]),
+             label=label)
 
-\subsection{Raw Signal Overview}
-Figs.~\ref{fig:eda_whole} and \ref{fig:rr_whole} depict the complete EDA and RR interval signals across the whole dataset. The EDA signal ranges from 0 to approximately 10~$\mu$S, with prominent amplitude bursts indicative of sympathetic electrodermal responses. The RR interval signal shows marked variability between approximately 400--1700~ms.
+plt.title('RR Interval FFT by State')
+plt.xlabel('Frequency')
+plt.ylabel('Amplitude')
+plt.legend()
+plt.xlim(0.001, 0.1)
+plt.ylim(0, 50000)
+plt.figure(figsize=(12,4))
+plt.show()
 
-\begin{figure}[H]
-\centering
-\includegraphics[width=\columnwidth]{fig1_eda_raw.png}
-\caption{EDA signal (whole dataset). x-axis: sample index; y-axis: EDA ($\mu$S).}
-\label{fig:eda_whole}
-\end{figure}
+from scipy import stats
 
-\begin{figure}[H]
-\centering
-\includegraphics[width=\columnwidth]{fig2_rr_raw.png}
-\caption{RR interval signal (whole dataset). x-axis: sample index; y-axis: RR interval (ms).}
-\label{fig:rr_whole}
-\end{figure}
+# Separate baseline and postural states
+baseline = df[df['state'].str.lower() == 'baseline']
+postural = df[df['state'].str.lower() == 'postural']
 
-\subsection{Baseline vs.\ Postural Comparison}
-Figs.~\ref{fig:eda_bp} and \ref{fig:rr_bp} overlay baseline and postural epochs for EDA and RR interval, respectively. The postural condition spans a substantially longer recording window and displays different amplitude distributions, particularly in EDA, where elevated skin conductance responses are observed.
+# ==========================
+# EDA FFT T-TEST
+# ==========================
+baseline_eda_signal = baseline['eda_microsiemens'].dropna().values
+postural_eda_signal = postural['eda_microsiemens'].dropna().values
 
-\begin{figure}[H]
-\centering
-\includegraphics[width=\columnwidth]{fig3_eda_baseline_postural.png}
-\caption{EDA signal: baseline vs.\ postural state overlay.}
-\label{fig:eda_bp}
-\end{figure}
+# Remove DC component
+baseline_eda_clean = baseline_eda_signal - np.mean(baseline_eda_signal)
+postural_eda_clean = postural_eda_signal - np.mean(postural_eda_signal)
 
-\begin{figure}[H]
-\centering
-\includegraphics[width=\columnwidth]{fig4_rr_baseline_postural.png}
-\caption{RR interval signal: baseline vs.\ postural state overlay.}
-\label{fig:rr_bp}
-\end{figure}
+# FFT
+baseline_eda_fft = np.abs(fft(baseline_eda_clean))
+postural_eda_fft = np.abs(fft(postural_eda_clean))
 
-\subsection{FFT Spectra After DC Removal}
-Figs.~\ref{fig:eda_fft} and \ref{fig:rr_fft} present the FFT magnitude spectra after DC removal, restricted to 0--0.1~Hz. Both spectra exhibit dominant low-frequency content, consistent with slow autonomic modulation. The postural condition demonstrates higher spectral amplitudes in both signals.
+# T-test
+t_stat_eda, p_value_eda = stats.ttest_ind(
+    baseline_eda_fft,
+    postural_eda_fft,
+    equal_var=False
+)
 
-\begin{figure}[H]
-\centering
-\includegraphics[width=\columnwidth]{fig5_eda_fft.png}
-\caption{EDA FFT by state (DC removed). Baseline vs.\ postural, 0--0.1~Hz.}
-\label{fig:eda_fft}
-\end{figure}
+print("===== EDA FFT T-Test =====")
+print(f"T-statistic: {t_stat_eda:.4f}")
+print(f"P-value: {p_value_eda:.6f}")
 
-\begin{figure}[H]
-\centering
-\includegraphics[width=\columnwidth]{fig6_rr_fft.png}
-\caption{RR interval FFT by state (DC removed). Baseline vs.\ postural, 0--0.1~Hz.}
-\label{fig:rr_fft}
-\end{figure}
+if p_value_eda < 0.05:
+    print("✅ SIGNIFICANT difference (p < 0.05)")
+else:
+    print("❌ NOT significant (p >= 0.05)")
 
-\subsection{Independent T-Test Results}
-Table~\ref{tab:ttest} summarizes the descriptive statistics and Welch's $t$-test results for the DC-removed FFT magnitudes (0--0.1~Hz) of both signals.
+print()
 
-\begin{table}[H]
-\centering
-\caption{Welch's Independent T-Test Results on DC-Removed FFT Magnitudes (0--0.1 Hz)}
-\label{tab:ttest}
-\begin{tabular}{llrl}
-\toprule
-\textbf{Signal} & \textbf{Group} & \textbf{Mean Amp.} & \textbf{Result} \\
-\midrule
-EDA & Baseline & 92.28 & $t = -2.5127$ \\
-($\mu$S)    & Postural & 145.14 & $p = 0.0122^{*}$ \\
-\midrule
-RR Interval & Baseline & 10{,}444.47 & $t = -5.5743$ \\
-(ms)        & Postural & 16{,}966.50 & $p < 0.000001^{*}$ \\
-\bottomrule
-\multicolumn{4}{l}{\footnotesize{* Statistically significant at $\alpha = 0.05$.}}
-\end{tabular}
-\end{table}
+# ==========================
+# RR INTERVAL FFT T-TEST
+# ==========================
+baseline_rr_signal = baseline['rr_interval_milliseconds'].dropna().values
+postural_rr_signal = postural['rr_interval_milliseconds'].dropna().values
 
-For EDA, the postural state exhibited a mean FFT magnitude approximately 1.57 times higher than baseline (145.14 vs.\ 92.28), a difference that was statistically significant ($t = -2.5127$, $p = 0.0122$). For RR interval, the postural state exhibited a mean FFT magnitude approximately 1.62 times higher than baseline (16,966.50 vs.\ 10,444.47), with a substantially stronger level of significance ($t = -5.5743$, $p < 0.000001$).
+# Remove DC component
+baseline_rr_clean = baseline_rr_signal - np.mean(baseline_rr_signal)
+postural_rr_clean = postural_rr_signal - np.mean(postural_rr_signal)
 
-\section{Discussion}
+# FFT
+baseline_rr_fft = np.abs(fft(baseline_rr_clean))
+postural_rr_fft = np.abs(fft(postural_rr_clean))
 
-Both EDA and RR interval signals showed statistically significant increases in low-frequency (0--0.1~Hz) FFT magnitude during the postural yoga state relative to baseline rest. This is consistent with established autonomic physiology: increased skin conductance (EDA) reflects heightened sympathetic arousal \cite{boucsein2012electrodermal}, while increased low-frequency power in RR interval suggests greater autonomic modulation of heart rate during postural activity \cite{thayer2007role}.
+# T-test
+t_stat_rr, p_value_rr = stats.ttest_ind(
+    baseline_rr_fft,
+    postural_rr_fft,
+    equal_var=False
+)
 
-Notably, the RR interval signal exhibited a substantially smaller $p$-value than EDA, indicating a stronger and more consistent separation between states in the heart-rate-variability domain. This suggests RR interval may be a more robust single-signal discriminator of baseline versus postural states than EDA alone, although both signals independently support the same conclusion.
+print("===== RR Interval FFT T-Test =====")
+print(f"T-statistic: {t_stat_rr:.4f}")
+print(f"P-value: {p_value_rr:.6f}")
 
-These results demonstrate that meaningful, statistically validated differentiation between physiological states can be achieved through frequency-domain signal processing and classical hypothesis testing alone, without training a machine learning classifier.
-
-A key limitation is the sample imbalance (2,235 baseline vs.\ 12,481 postural samples), which may influence statistical power. Additionally, the FFT was computed on the full state-concatenated signal rather than per-subject. Future work should apply per-subject FFT analysis to confirm consistency across individuals and explore band-specific spectral features (VLF, LF, HF) rather than aggregate FFT magnitude alone.
-
-\section{Conclusion}
-
-This paper demonstrated that postural yoga activity induces statistically significant changes in the frequency-domain representation of both EDA and RR interval signals recorded from 16 participants. After DC removal, Welch's independent $t$-tests confirmed significant FFT magnitude differences for EDA ($t = -2.5127$, $p = 0.0122$) and RR interval ($t = -5.5743$, $p < 0.000001$). These findings support frequency-domain signal processing as a viable, standalone approach for distinguishing autonomic states from wearable sensor data, without requiring a trained machine learning model.
-
-\section*{Acknowledgment}
-The authors thank Dr.\ Tanvi Banerjee for guidance on signal processing methodology throughout this research internship.
-
-\begin{thebibliography}{00}
-\bibitem{schmidt2025} P. Schmidt \textit{et al.}, ``Wearable Device Dataset from Induced Stress and Structured Exercise Sessions,'' \textit{PhysioNet}, v1.0.1, 2025.
-\bibitem{anumula2023} C. V. Anumula, T. Banerjee, and W. L. Romine, ``Understanding Physiological Responses for Intelligent Posture and Autonomic Response Detection Using Wearable Technology,'' \textit{Algorithms}, 2023.
-\bibitem{jhse} ``Effect of Variable Physical Activity Monitor Fitbit One on Physical Activity Behavior in Women --- A Pilot Study,'' \textit{Journal of Human Sport and Exercise}.
-\bibitem{flowtemp} ``Measuring Skin Temperature as Indicator for Cognitive Flow Using Wearable,'' \textit{IEEE Xplore}.
-\bibitem{thayer2007role} J.~F.~Thayer and R.~D.~Lane, ``The role of vagal function in the risk for cardiovascular disease and mortality,'' \textit{Biol. Psychol.}, vol.~74, no.~2, pp.~224--242, 2007.
-\bibitem{boucsein2012electrodermal} W.~Boucsein, \textit{Electrodermal Activity}, 2nd~ed. New York, NY, USA: Springer, 2012.
-\end{thebibliography}
-
-\end{document}
+if p_value_rr < 0.05:
+    print("✅ SIGNIFICANT difference (p < 0.05)")
+else:
+    print("❌ NOT significant (p >= 0.05)")
