@@ -1,0 +1,49 @@
+import numpy as np
+
+def hedges_g(group1, group2):
+    n1, n2 = len(group1), len(group2)
+    mean1, mean2 = np.mean(group1), np.mean(group2)
+    var1, var2 = np.var(group1, ddof=1), np.var(group2, ddof=1)
+    
+    pooled_sd = np.sqrt(((n1-1)*var1 + (n2-1)*var2) / (n1+n2-2))
+    cohens_d = (mean1 - mean2) / pooled_sd
+    correction = 1 - (3 / (4*(n1+n2) - 9))
+    g = cohens_d * correction
+    
+    return g, n1, n2
+
+# RR interval mean comparisons
+feature_col = 'rr_interval_milliseconds_mean'
+
+sym = df[df['state']=='sympathetic'][feature_col].dropna().values
+para = df[df['state']=='parasympathetic'][feature_col].dropna().values
+relaxed = df[df['state']=='relaxed'][feature_col].dropna().values
+
+print("===== Hedges' G: RR Interval Mean =====")
+
+g1, n1, n2 = hedges_g(sym, para)
+print(f"Sympathetic vs Parasympathetic: g={g1:.4f} (n1={n1}, n2={n2})")
+
+g2, n1, n2 = hedges_g(sym, relaxed)
+print(f"Sympathetic vs Relaxed: g={g2:.4f} (n1={n1}, n2={n2})")
+
+g3, n1, n2 = hedges_g(para, relaxed)
+print(f"Parasympathetic vs Relaxed: g={g3:.4f} (n1={n1}, n2={n2})")
+
+
+feature_col_eda = 'eda_microsiemens_mean'
+
+sym_eda = df[df['state']=='sympathetic'][feature_col_eda].dropna().values
+para_eda = df[df['state']=='parasympathetic'][feature_col_eda].dropna().values
+relaxed_eda = df[df['state']=='relaxed'][feature_col_eda].dropna().values
+
+print("\n===== Hedges' G: EDA Mean =====")
+
+g1e, n1, n2 = hedges_g(sym_eda, para_eda)
+print(f"Sympathetic vs Parasympathetic: g={g1e:.4f} (n1={n1}, n2={n2})")
+
+g2e, n1, n2 = hedges_g(sym_eda, relaxed_eda)
+print(f"Sympathetic vs Relaxed: g={g2e:.4f} (n1={n1}, n2={n2})")
+
+g3e, n1, n2 = hedges_g(para_eda, relaxed_eda)
+print(f"Parasympathetic vs Relaxed: g={g3e:.4f} (n1={n1}, n2={n2})")
