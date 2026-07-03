@@ -29,6 +29,8 @@ processing — no machine learning black box, no clinical equipment required.
 | RR Cross-correlation | r = −0.23 (p < 0.001) |
 | Relaxed SD1 (beat-to-beat variability) | 185.40 ms |
 
+poincare_separated.png
+
 ## Tech Stack
 - Python 3, NumPy, SciPy, Pandas, Matplotlib
 - Google Colab
