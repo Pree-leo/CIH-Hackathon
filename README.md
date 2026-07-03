@@ -1,6 +1,6 @@
 # CIH Hackathon
 yoga dataset signal processing
-# YogaSync — Real-Time Autonomic State Detection During Yoga
+# Real-Time Autonomic State Detection During Yoga
 
 ## Problem
 537 million diabetic and yoga therapy patients receive zero objective 
