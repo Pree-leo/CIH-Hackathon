@@ -1,4 +1,4 @@
-# MIT-Internship
+# CIH Hackthon
 yoga dataset signal processing
 # YogaSync — Real-Time Autonomic State Detection During Yoga
 
