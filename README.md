@@ -150,10 +150,10 @@ AutoInsulin is a research prototype developed for educational, research, and inn
 
 # Team
 
+- Aishwarya Jain
+- Nireeksha Shetty
 - Preethika
-- Team Member 2
-- Team Member 3
-- Team Member 4
+- Snigdha S Shetty
 
 ---
 
