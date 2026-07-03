@@ -1,4 +1,4 @@
-# CIH Hackthon
+# CIH Hackathon
 yoga dataset signal processing
 # YogaSync — Real-Time Autonomic State Detection During Yoga
 
